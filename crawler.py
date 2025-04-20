@@ -11,7 +11,12 @@ def init():
     print("Consultando dados cadastrais do servidor...")
     motherboard_id = get_motherboard_id()
 
-    server_data = requests.get(f"http://localhost:3333/server/get/components?motherboardID={motherboard_id}").json()
+    try:
+        server_data = requests.get(f"http://localhost:3333/server/get/components?motherboardID={motherboard_id}").json()
+    except:
+        print("Servidor não cadastrado, execute o script de cadastro primeiro.")
+
+
     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
 
     print("Verificando métricas...")
