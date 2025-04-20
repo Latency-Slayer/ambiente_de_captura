@@ -11,7 +11,7 @@ def init():
     print("Consultando dados cadastrais do servidor...")
     motherboard_id = get_motherboard_id()
 
-    server_data = requests.get(f"http://localhost:3333/server/get/components/{motherboard_id}").json()
+    server_data = requests.get(f"http://localhost:3333/server/get/components?motherboardID={motherboard_id}").json()
     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
 
     print("Verificando métricas...")
@@ -65,10 +65,11 @@ def init():
 
         capturing.append(csv_line)
 
-
         with open("teste.csv", mode="w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
             writer.writerows(capturing)
+            file.flush()
+            print("Dado gravado")
 
         time.sleep(1)
 
