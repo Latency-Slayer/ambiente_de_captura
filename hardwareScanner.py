@@ -32,6 +32,8 @@ def init():
     tag_name = get_tag_name()
     server_type = get_server_type()
     so = platform.system()
+    game = get_server_game()
+    port = get_server_port()
     location = get_server_location()
     city = location["city"]
     country = location["countryCode"]
@@ -42,8 +44,11 @@ def init():
     server_json.append("type", server_type["type"])
     server_json.append("instance_id", server_type["instance_id"])
     server_json.append("so", so.lower())
+    server_json.append("game", game)
+    server_json.append("port", port)
     server_json.append("city", city)
     server_json.append("country_code", country)
+
 
     server_json.append("components", components)
 
@@ -160,6 +165,25 @@ def get_instance_id():
     instance_id = input("☁️ Digite o ID da instância em nuvem (opcional): ")
     return instance_id or None
 
+
+def get_server_game():
+    game = input("Jogo hospedado no servidor: ")
+
+    if game == "":
+        print("O jogo é obrigatório. Tente novamente. \n")
+        return get_server_game()
+
+    return game
+
+
+def get_server_port():
+    port = input("Porta em que o jogo está sendo executado: ")
+
+    if port == "":
+        print("A porta é obrigatória. Tente novamente. \n")
+        return get_server_port()
+
+    return port
 
 
 def get_components ():
