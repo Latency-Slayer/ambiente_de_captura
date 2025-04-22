@@ -177,13 +177,18 @@ def get_server_game():
 
 
 def get_server_port():
-    port = input("Porta em que o jogo está sendo executado: ")
+    try:
+        port = int(input("Porta em que o jogo está sendo executado: "))
 
-    if port == "":
-        print("A porta é obrigatória. Tente novamente. \n")
+        if port == "":
+            print("A porta é obrigatória. Tente novamente. \n")
+            return get_server_port()
+
+        return port
+
+    except:
+        print("A porta deve ser um número inteiro. Tente novamente. \n")
         return get_server_port()
-
-    return port
 
 
 def get_components ():
@@ -394,7 +399,6 @@ def get_disk_data():
 
     except Exception as e:
         print(f"\n\033[1;31m❗ Erro ao coletar dados dos discos:\033[0m {e}")
-
 
 
 def get_number_in_str(str: str):

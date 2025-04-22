@@ -18,7 +18,7 @@ def init():
 
     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
 
-    print("Verificando métricas...")
+    print("Iniciando captura de dados...")
 
     capturing = [[]]
 
@@ -95,6 +95,21 @@ def get_motherboard_id():
 
     print(f"📎 UUID da Placa-mãe: \033[1;36m{motherboard_uuid}\033[0m")
     return motherboard_uuid
+
+
+def get_qtd_connections(port):
+    quant = 0
+
+    connections = psutil.net_connections()
+    
+    for conn in connections:
+        if conn.laddr:
+            if conn.laddr.port == port:
+                if conn.status == 'ESTABLISHED':
+                    quant += 1
+
+
+    return quant
 
 
 init()
