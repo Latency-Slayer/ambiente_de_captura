@@ -14,7 +14,7 @@ def init():
         server_data = requests.get(f"http://localhost:3333/server/get/components?motherboardID={motherboard_id}").json()
     except:
         print("Servidor não cadastrado, execute o script de cadastro primeiro.")
-
+        exit()
 
     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
 
@@ -31,6 +31,8 @@ def init():
             f"{component["type"]}_{component["tag_name"].strip().replace(" ", "-")}_{component["metric"]}")
 
     capturing[0].append("quantity_connections")
+    capturing[0].append("download")
+    capturing[0].append("upload")
 
     while True:
         csv_line = []
@@ -68,8 +70,14 @@ def init():
                     disk_use = psutil.disk_usage(partition).total / 1024 ** 3
                     csv_line.append(disk_use)
 
-        qtd_connections = get_qtd_connections(int(server_data["server"]["port"])) 
+        qtd_connections = get_qtd_connections(int(server_data["server"]["port"]))
+        csv_line.append(qtd_connections)
 
+        download = psutil.net_io_counters().bytes_recv / (1024 ** 2)
+        upload = psutil.net_io_counters().bytes_sent / (1024 ** 2)
+
+        csv_line.append(download)
+        csv_line.append(upload)
 
         capturing.append(csv_line)
 
@@ -77,7 +85,6 @@ def init():
             writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
             writer.writerows(capturing)
             file.flush()
-            print("Dado gravado")
 
         time.sleep(1)
 
@@ -114,6 +121,5 @@ def get_qtd_connections(port):
 
 
     return quant
-
 
 init()
