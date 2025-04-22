@@ -30,6 +30,8 @@ def init():
         capturing[0].append(
             f"{component["type"]}_{component["tag_name"].strip().replace(" ", "-")}_{component["metric"]}")
 
+    capturing[0].append("quantity_connections")
+
     while True:
         csv_line = []
 
@@ -65,6 +67,8 @@ def init():
                 elif storage_metric == "GB":
                     disk_use = psutil.disk_usage(partition).total / 1024 ** 3
                     csv_line.append(disk_use)
+
+        qtd_connections = get_qtd_connections(int(server_data["server"]["port"])) 
 
 
         capturing.append(csv_line)
