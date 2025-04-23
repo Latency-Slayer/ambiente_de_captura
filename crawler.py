@@ -81,12 +81,16 @@ def init():
 
         capturing.append(csv_line)
 
-        with open("teste.csv", mode="w", newline="", encoding="utf-8") as file:
+        with open("data.csv", mode="w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
             writer.writerows(capturing)
             file.flush()
 
         time.sleep(1)
+
+        if len(capturing) % 10 == 0:
+            upload_csv(motherboard_id)
+
 
 
 def get_motherboard_id():
@@ -122,4 +126,18 @@ def get_qtd_connections(port):
 
     return quant
 
+
+def upload_csv(motherboard_id):
+    try:
+        response = requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open("data.csv", "rb")}, data={"motherboard_uuid": motherboard_id})
+
+        print(response.status_code)
+    except requests.exceptions.ConnectionError as e:
+        print(f"Error: {e}")
+        exit()
+
+
+
 init()
+
+
