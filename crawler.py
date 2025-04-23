@@ -1,10 +1,11 @@
 import time
+from datetime import datetime
+
 import requests
 import platform
 import subprocess
 import csv
 import psutil
-
 
 def init():
     print("Consultando dados cadastrais do servidor...")
@@ -12,7 +13,7 @@ def init():
 
     try:
         server_data = requests.get(f"http://localhost:3333/server/get/components?motherboardID={motherboard_id}").json()
-    except:
+    except Exception:
         print("Servidor não cadastrado, execute o script de cadastro primeiro.")
         exit()
 
@@ -20,19 +21,28 @@ def init():
 
     print("Iniciando captura de dados...")
 
-    capturing = [[]]
+    csv_header = []
+    csv_data = []
 
     # Criando cabeçalho do CSV
     for component in server_data["components"]:
         if platform.system() == "Windows" and component["type"] == "cpu" and component["metric"] == "celsius":
             continue
 
-        capturing[0].append(
+        csv_header.append(
             f"{component["type"]}_{component["tag_name"].strip().replace(" ", "-")}_{component["metric"]}")
 
-    capturing[0].append("quantity_connections")
-    capturing[0].append("download")
-    capturing[0].append("upload")
+    csv_header.append("quantity_connections")
+    csv_header.append("download")
+    csv_header.append("upload")
+    csv_header.append("timestamp")
+
+    with open("data.csv", mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
+        writer.writerow(csv_header)
+        file.flush()
+
+    count = 0
 
     while True:
         csv_line = []
@@ -76,21 +86,31 @@ def init():
         download = psutil.net_io_counters().bytes_recv / (1024 ** 2)
         upload = psutil.net_io_counters().bytes_sent / (1024 ** 2)
 
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         csv_line.append(download)
         csv_line.append(upload)
+        csv_line.append(timestamp)
 
-        capturing.append(csv_line)
+        csv_data.append(csv_line)
 
-        with open("data.csv", mode="w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
-            writer.writerows(capturing)
-            file.flush()
+
+        count += 1
+        print(f"{count} - Nova linha adicionada ao CSV: ", csv_line, "\n")
+        print(len(csv_data))
+
+        if len(csv_data) == 10:
+            with open("data.csv", mode="a", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
+                writer.writerows(csv_data)
+                file.flush()
+
+                csv_data.clear()
+
+
+            upload_csv(motherboard_id, server_data["server"]["registration_number"], server_data["server"]["legal_name"])
 
         time.sleep(1)
-
-        if len(capturing) % 10 == 0:
-            upload_csv(motherboard_id)
-
 
 
 def get_motherboard_id():
@@ -127,9 +147,10 @@ def get_qtd_connections(port):
     return quant
 
 
-def upload_csv(motherboard_id):
+def upload_csv(motherboard_id, registration_number, legal_name):
     try:
-        response = requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open("data.csv", "rb")}, data={"motherboard_uuid": motherboard_id})
+        response = requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open("data.csv", "rb")},
+                                 data={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name})
 
         print(response.status_code)
     except requests.exceptions.ConnectionError as e:
