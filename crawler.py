@@ -37,14 +37,20 @@ def init():
     csv_header.append("upload")
     csv_header.append("timestamp")
 
-    with open("data.csv", mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
-        writer.writerow(csv_header)
-        file.flush()
+    date = datetime.now().date()
+
+    create_csv(csv_header, f"data_{date}.csv")
 
     count = 0
 
     while True:
+        if date != datetime.now().date():
+            date = datetime.now().date()
+            with open(f"data_{date}.csv", mode="a", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
+                writer.writerows(csv_data)
+                file.flush()
+
         csv_line = []
 
         for component in server_data["components"]:
@@ -100,7 +106,7 @@ def init():
         print(len(csv_data))
 
         if len(csv_data) == 10:
-            with open("data.csv", mode="a", newline="", encoding="utf-8") as file:
+            with open(f"data_{date}.csv", mode="a", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
                 writer.writerows(csv_data)
                 file.flush()
@@ -147,9 +153,16 @@ def get_qtd_connections(port):
     return quant
 
 
+
+def create_csv(csv_header, csv_name):
+    with open(csv_name, mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
+        writer.writerow(csv_header)
+        file.flush()
+
 def upload_csv(motherboard_id, registration_number, legal_name):
     try:
-        response = requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open("data.csv", "rb")},
+        response = requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open(f"data_{datetime.now().date()}.csv", "rb")},
                                  data={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name})
 
         print(response.status_code)
