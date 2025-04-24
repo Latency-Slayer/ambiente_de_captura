@@ -12,7 +12,7 @@ def init():
     motherboard_id = get_motherboard_id()
 
     try:
-        server_data = requests.get(f"http://localhost:3333/server/get/components?motherboardID={motherboard_id}").json()
+        server_data = requests.get(f"http://52.202.93.40/server/get/components?motherboardID={motherboard_id}").json()
     except Exception:
         print("Servidor não cadastrado, execute o script de cadastro primeiro.")
         exit()
