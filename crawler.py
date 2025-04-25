@@ -104,7 +104,7 @@ def init():
         count += 1
         print(f"{count} - Nova linha adicionada ao CSV: ", csv_line, "\n")
 
-        if len(csv_data) == 10:
+        if len(csv_data) == 100:
             with open(f"data_{date}.csv", mode="a", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
                 writer.writerows(csv_data)
@@ -115,7 +115,7 @@ def init():
 
             upload_csv(motherboard_id, server_data["server"]["registration_number"], server_data["server"]["legal_name"])
 
-        time.sleep(1)
+        time.sleep(3)
 
 
 def get_motherboard_id():
@@ -161,7 +161,7 @@ def create_csv(csv_header, csv_name):
 
 def upload_csv(motherboard_id, registration_number, legal_name):
     try:
-        response = requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open(f"data_{datetime.now().date()}.csv", "rb")},
+        requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open(f"data_{datetime.now().date()}.csv", "rb")},
                                  data={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name})
     except requests.exceptions.ConnectionError as e:
         print(f"Error: {e}")
