@@ -37,20 +37,13 @@ def init():
     csv_header.append("upload")
     csv_header.append("timestamp")
 
-    date = datetime.now().date()
+    date = datetime.now().strftime("%d-%m-%Y%H-%M-%S")
 
     create_csv(csv_header, f"data_{date}.csv")
 
     count = 0
 
     while True:
-        if date != datetime.now().date():
-            date = datetime.now().date()
-            with open(f"data_{date}.csv", mode="a", newline="", encoding="utf-8") as file:
-                writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
-                writer.writerows(csv_data)
-                file.flush()
-
         csv_line = []
 
         for component in server_data["components"]:
@@ -113,7 +106,10 @@ def init():
                 csv_data.clear()
 
 
-            upload_csv(motherboard_id, server_data["server"]["registration_number"], server_data["server"]["legal_name"])
+            upload_csv(motherboard_id, server_data["server"]["registration_number"], server_data["server"]["legal_name"], date)
+            date = datetime.now().strftime("%d-%m-%Y%H-%M-%S")
+
+            create_csv(csv_header, f"data_{date}.csv")
 
         time.sleep(3)
 
@@ -159,9 +155,9 @@ def create_csv(csv_header, csv_name):
         writer.writerow(csv_header)
         file.flush()
 
-def upload_csv(motherboard_id, registration_number, legal_name):
+def upload_csv(motherboard_id, registration_number, legal_name, date):
     try:
-        requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open(f"data_{datetime.now().date()}.csv", "rb")},
+        requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open(f"data_{date}.csv", "rb")},
                                  data={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name})
     except requests.exceptions.ConnectionError as e:
         print(f"Error: {e}")
