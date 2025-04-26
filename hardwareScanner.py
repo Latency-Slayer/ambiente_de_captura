@@ -53,7 +53,7 @@ def init():
     server_json.append("components", components)
 
     try:
-        request = requests.post("http://52.202.93.40/server/register", json=server_json.json)
+        request = requests.post("http://44.223.112.30/server/register", json=server_json.json)
 
         if request.status_code != 201:
             raise ValueError(request.json())
@@ -91,7 +91,7 @@ def get_auth_data():
         email = input("📧 Digite seu e-mail: ")
         password = input("🔑 Digite sua senha: ")
 
-        auth = requests.post("http://52.202.93.40/usuarios/login", json={
+        auth = requests.post("http://44.223.112.30/usuarios/login", json={
             "loginEmailServer": email,
             "loginPasswordServer": password
         })

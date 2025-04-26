@@ -12,7 +12,7 @@ def init():
     motherboard_id = get_motherboard_id()
 
     try:
-        server_data = requests.get(f"http://52.202.93.40/server/get/components?motherboardID={motherboard_id}").json()
+        server_data = requests.get(f"http://44.223.112.30/server/get/components?motherboardID={motherboard_id}").json()
     except Exception:
         print("Servidor não cadastrado, execute o script de cadastro primeiro.")
         exit()
@@ -97,7 +97,7 @@ def init():
         count += 1
         print(f"{count} - Nova linha adicionada ao CSV: ", csv_line, "\n")
 
-        if len(csv_data) == 100:
+        if len(csv_data) == 10:
             with open(f"data_{date}.csv", mode="a", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
                 writer.writerows(csv_data)
@@ -157,7 +157,7 @@ def create_csv(csv_header, csv_name):
 
 def upload_csv(motherboard_id, registration_number, legal_name, date):
     try:
-        requests.post("http://52.202.93.40:5000/s3/raw/upload", files={"file": open(f"data_{date}.csv", "rb")},
+        requests.post("http://44.223.112.30:5000/s3/raw/upload", files={"file": open(f"data_{date}.csv", "rb")},
                                  data={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name})
     except requests.exceptions.ConnectionError as e:
         print(f"Error: {e}")
