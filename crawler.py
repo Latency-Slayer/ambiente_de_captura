@@ -5,7 +5,9 @@ import requests
 import platform
 import subprocess
 import csv
+import json
 import psutil
+
 
 def init():
     print("Consultando dados cadastrais do servidor...")
@@ -23,6 +25,8 @@ def init():
 
     csv_header = []
     csv_data = []
+
+    process_json = []
 
     # Criando cabeçalho do CSV
     for component in server_data["components"]:
@@ -97,7 +101,7 @@ def init():
         count += 1
         print(f"{count} - Nova linha adicionada ao CSV: ", csv_line, "\n")
 
-        if len(csv_data) == 10:
+        if len(csv_data) == 5:
             with open(f"data_{date}.csv", mode="a", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
                 writer.writerows(csv_data)
@@ -110,6 +114,14 @@ def init():
             date = datetime.now().strftime("%d-%m-%Y%H-%M-%S")
 
             create_csv(csv_header, f"data_{date}.csv")
+
+
+        process_json.append(captura_processos())
+
+        if len(process_json) == 5:
+            upload_process_json(motherboard_id, server_data["server"]["registration_number"],
+                                server_data["server"]["legal_name"], process_json)
+            process_json.clear()
 
         time.sleep(3)
 
@@ -159,10 +171,50 @@ def upload_csv(motherboard_id, registration_number, legal_name, date):
     try:
         requests.post("http://44.223.112.30:5000/s3/raw/upload", files={"file": open(f"data_{date}.csv", "rb")},
                                  data={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name})
+
+        print("CSV enviado com sucesso! \n")
     except requests.exceptions.ConnectionError as e:
         print(f"Error: {e}")
         exit()
 
+
+def upload_process_json(motherboard_id, registration_number, legal_name, process_json):
+    try:
+        requests.post("http://44.223.112.30:5000/s3/raw/process/upload",
+                                 json={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name,
+                                       "process_json": process_json})
+
+        print("Lista de processos enviada com sucesso! \n")
+    except requests.exceptions.ConnectionError as e:
+        print(f"Error: {e}")
+        exit()
+
+
+
+def captura_processos():
+    processos = psutil.process_iter()
+
+    dict_processos = {
+        "process_data" : [],
+        "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    for p in processos:
+        try:
+            dict_processos["process_data"].append(
+                dict({
+                    "name": p.name(),
+                    "pid": p.pid or None,
+                    "status": p.status() or None,
+                    "cpu_percent": p.cpu_percent(),
+                    "memory_percent": p.memory_percent(),
+                    "memory_gb": p.memory_info().vms / 1024 ** 3,
+                })
+            )
+        except:
+            continue
+
+    return dict_processos
 
 init()
 
