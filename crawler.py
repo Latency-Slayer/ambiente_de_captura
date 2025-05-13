@@ -5,7 +5,6 @@ import requests
 import platform
 import subprocess
 import csv
-import json
 import psutil
 
 
