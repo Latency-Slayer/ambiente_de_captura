@@ -1,0 +1,52 @@
+{
+  "server_data": {
+    "motherboard_id": "HNZ-202112132021",
+    "tag_name": "PC Bryan",
+    "type": "on-premise",
+    "game": "Minecraft",
+    "port": 25565,
+    "legal_name": "Mojang Studios",
+    "registration_number": "SE000000000001"
+  },
+  "connections_data": {
+    "quant_players": 3,
+    "players_data": [
+      [
+        "223.246.203.156",
+        25565,
+        {
+          "country": "China",
+          "city": "Hefei",
+          "region": "AH",
+          "zip": "230000",
+          "lat": 31.8616,
+          "lon": 117.286
+        }
+      ],
+      [
+        "223.94.141.212",
+        25565,
+        {
+          "country": "China",
+          "city": "Hangzhou",
+          "region": "ZJ",
+          "zip": "310000",
+          "lat": 30.2656,
+          "lon": 120.154
+        }
+      ],
+      [
+        "159.33.230.30",
+        25565,
+        {
+          "country": "Canada",
+          "city": "Ottawa",
+          "region": "ON",
+          "zip": "K1Y",
+          "lat": 45.4021,
+          "lon": -75.7255
+        }
+      ]
+    ]
+  }
+}
