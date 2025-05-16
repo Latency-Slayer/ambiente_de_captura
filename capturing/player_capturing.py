@@ -1,9 +1,11 @@
+import time
+
 import psutil
 import requests
 from faker import Faker
 import random
 
-fake = Faker("en_US")
+fake = Faker()
 
 ip_cache = {}
 
@@ -17,27 +19,43 @@ def init(server_data):
 
 
 def init_faker(server_data):
-    qtd_connections = random.randint(0, 200)
+    while True:
+        players_difference = random.randint(0, 50)
+        add_players = True if random.randint(0, 1) == 0 else False
+        if players_difference > len(ip_cache):
+            add_players = True
 
-    connections_data = [generate_fake_connections() for _ in range(qtd_connections)]
+        print(add_players)
 
-    connections = dict({
-        "server_data": server_data["server"],
-        "connections_data": {
-            "quant_players": qtd_connections,
-            "players_data": connections_data
-        }
-    })
+        for _ in range(players_difference):
+            if not add_players:
+                ip_cache.popitem()
+            else:
+                generate_fake_connections()
 
-    print(connections)
+
+        connections = dict({
+            "server_data": server_data["server"],
+            "connections_data": {
+                "quant_players": len(ip_cache),
+                "players_data": list(ip_cache.values())
+            }
+        })
+
+        print(connections)
+
+        time.sleep(3)
 
 
 def generate_fake_connections():
     player_ip = fake.ipv4_public()
 
+    if player_ip in ip_cache:
+        return ip_cache[player_ip]
+
     player_location = get_location(player_ip)
 
-    return [
+    player_data = [
         player_ip,
         25565,
         {
@@ -50,15 +68,13 @@ def generate_fake_connections():
         }
     ]
 
+    ip_cache[player_ip] = player_data
+
+    return player_data
+
 
 def get_location(ip):
-    if ip in ip_cache:
-        return ip_cache[ip]
-
-    player_location = requests.get(f"http://ip-api.com/json/{ip}").json()
-    ip_cache[ip] = player_location
-
-    return player_location
+    return requests.get(f"http://ip-api.com/json/{ip}").json()
 
 
 def get_connections(port):
