@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import requests
 import platform
 import subprocess
