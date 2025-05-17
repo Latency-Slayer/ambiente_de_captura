@@ -19,6 +19,7 @@ def init():
 
     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
 
+
     # hardware_capturing_thread = threading.Thread(target=hardware_capturing, args=(server_data, motherboard_id,))
 
     player_capturing = threading.Thread(target=players_capturing, args=(server_data,))

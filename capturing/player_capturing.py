@@ -10,8 +10,14 @@ fake = Faker()
 ip_cache = {}
 
 def init(server_data):
+    ip = requests.get('https://api.ipify.org').text
+    location = get_location(ip)
+
     connections = dict({
-        "server_data": server_data["server"],
+        "server_data": {
+            **server_data["server"],
+            **location,
+        },
         "connections_data": get_connections(server_data["server"]["port"])
     })
 
@@ -19,6 +25,9 @@ def init(server_data):
 
 
 def init_faker(server_data):
+    ip = requests.get('https://api.ipify.org').text
+    location = get_location(ip)
+
     while True:
         players_difference = random.randint(0, 50)
         add_players = True if random.randint(0, 1) == 0 else False
@@ -34,8 +43,12 @@ def init_faker(server_data):
                 generate_fake_connections()
 
 
+
         connections = dict({
-            "server_data": server_data["server"],
+            "server_data": {
+                **server_data["server"],
+                **location
+            },
             "connections_data": {
                 "quant_players": len(ip_cache),
                 "players_data": list(ip_cache.values())
@@ -62,6 +75,7 @@ def generate_fake_connections():
             "country": player_location["country"],
             "city": player_location["city"],
             "region": player_location["region"],
+            "continent_code": player_location["continentCode"],
             "zip": player_location["zip"],
             "lat": player_location["lat"],
             "lon": player_location["lon"]
@@ -74,7 +88,7 @@ def generate_fake_connections():
 
 
 def get_location(ip):
-    return requests.get(f"http://ip-api.com/json/{ip}").json()
+    return requests.get(f"http://ip-api.com/json/{ip}?fields=message,continent,continentCode,country,city,region,zip,lat,lon").json()
 
 
 def get_connections(port):
