@@ -29,9 +29,9 @@ def init_faker(server_data):
     location = get_location(ip)
 
     while True:
-        players_difference = random.randint(0, 50)
-        add_players = True if random.randint(0, 1) == 0 else False
-        if players_difference > len(ip_cache):
+        players_difference = random.randint(0, 5)
+        add_players = False if random.randint(0, 2) == 0 else True
+        if players_difference >= len(ip_cache):
             add_players = True
 
         print(add_players)
@@ -55,9 +55,11 @@ def init_faker(server_data):
             }
         })
 
-        print(connections)
+        response = requests.post("http://localhost:80/bi/dashboard/real-time/receive-data", json={"data": connections})
 
-        time.sleep(3)
+        # print(response.json())
+
+        time.sleep(1)
 
 
 def generate_fake_connections():
