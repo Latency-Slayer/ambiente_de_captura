@@ -55,6 +55,8 @@ def init_faker(server_data):
             }
         })
 
+        print(len(ip_cache))
+
         response = requests.post("http://localhost:80/bi/dashboard/real-time/receive-data", json={"data": connections})
 
         # print(response.json())
