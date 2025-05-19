@@ -1,9 +1,17 @@
+import os
+
 import psutil
 import platform
 import subprocess
 import requests
 import re
 import json
+import dotenv
+
+dotenv.load_dotenv()
+import os
+
+print(os.environ["WEB_DATA_VIZ_URL"])
 
 class Json:
     def __init__(self):
@@ -53,7 +61,7 @@ def init():
     server_json.append("components", components)
 
     try:
-        request = requests.post("http://localhost/server/register", json=server_json.json)
+        request = requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/server/register", json=server_json.json)
 
         if request.status_code != 201:
             raise ValueError(request.json())
@@ -91,7 +99,7 @@ def get_auth_data():
         email = input("📧 Digite seu e-mail: ")
         password = input("🔑 Digite sua senha: ")
 
-        auth = requests.post("http://localhost/usuarios/login", json={
+        auth = requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/usuarios/login", json={
             "loginEmailServer": email,
             "loginPasswordServer": password
         })

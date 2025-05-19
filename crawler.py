@@ -2,7 +2,10 @@ import requests
 import platform
 import subprocess
 import threading
+import dotenv
 
+dotenv.load_dotenv()
+import os
 
 from capturing.hardware_capturing import init as hardware_capturing
 from capturing.player_capturing import init_faker as players_capturing
@@ -12,7 +15,7 @@ def init():
     motherboard_id = get_motherboard_id()
 
     try:
-        server_data = requests.get(f"http://localhost/server/get/components?motherboardID={motherboard_id}").json()
+        server_data = requests.get(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/server/get/components?motherboardID={motherboard_id}").json()
     except Exception:
         print("Servidor não cadastrado, execute o script de cadastro primeiro.")
         exit()

@@ -5,6 +5,11 @@ import requests
 from faker import Faker
 import random
 
+import dotenv
+
+dotenv.load_dotenv()
+import os
+
 fake = Faker()
 
 ip_cache = {}
@@ -57,7 +62,7 @@ def init_faker(server_data):
 
         print(len(ip_cache))
 
-        response = requests.post("http://localhost:80/bi/dashboard/real-time/receive-data", json={"data": connections})
+        response = requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/bi/dashboard/real-time/receive-data", json={"data": connections})
 
         # print(response.json())
 
