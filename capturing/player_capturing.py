@@ -33,6 +33,8 @@ def init_faker(server_data):
     ip = requests.get('https://api.ipify.org').text
     location = get_location(ip)
 
+    server_data["server"]["ip"] = ip
+
     while True:
         players_difference = random.randint(0, 5)
         add_players = False if random.randint(0, 2) == 0 else True
