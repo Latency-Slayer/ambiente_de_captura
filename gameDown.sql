@@ -1,3 +1,5 @@
+INSERT INTO server (motherboard_id, tag_name, type, instance_id, active, so, city, game, port, fk_company, fk_country)
+VALUES ('HZN-9129883899', 'SA-02', 'on-premise', NULL, 1, 'windows', 'São Paulo', 'Helo', '25565', 1, 1);
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS simular_connection_capturing_periodo_queda$$
