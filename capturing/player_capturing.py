@@ -29,7 +29,7 @@ def init(server_data):
     print(connections)
 
 
-def init_faker(server_data):
+def init_faker(server_data, motherboard_id, registration_number, legal_name, connections_json):
     ip = requests.get('https://api.ipify.org').text
     location = get_location(ip)
 
@@ -64,9 +64,11 @@ def init_faker(server_data):
 
         print(len(ip_cache))
 
-        response = requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/bi/dashboard/real-time/receive-data", json={"data": connections})
-
-        # print(response.json())
+        requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/bi/dashboard/real-time/receive-data", json={"data": connections})
+        requests.post(f"http://{os.environ["DATA_TRANSFER_API"]}/s3/raw/process/upload",
+                      json={"motherboard_uuid": motherboard_id, "registration_number": registration_number,
+                            "legal_name": legal_name,
+                            "process_json": connections_json})
 
         time.sleep(1)
 

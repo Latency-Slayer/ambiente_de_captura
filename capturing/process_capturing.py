@@ -1,6 +1,10 @@
 import psutil
 from datetime import datetime
 import requests
+import os
+import dotenv
+
+dotenv.load_dotenv()
 
 def captura_processos():
     processos = psutil.process_iter()
@@ -29,7 +33,7 @@ def captura_processos():
 
 def upload_process_json(motherboard_id, registration_number, legal_name, process_json):
     try:
-        requests.post("http://44.223.112.30:5000/s3/raw/process/upload",
+        requests.post(f"http://{os.environ["DATA_TRANSFER_API"]}/s3/raw/process/upload",
                                  json={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name,
                                        "process_json": process_json})
 
@@ -42,8 +46,6 @@ def upload_process_json(motherboard_id, registration_number, legal_name, process
 
 def init(server_data, motherboard_id):
     process_json = []
-
-    count = 0
 
     while True:
         process_json.append(captura_processos())

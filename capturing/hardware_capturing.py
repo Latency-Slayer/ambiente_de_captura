@@ -4,7 +4,10 @@ from datetime import datetime
 import psutil
 import csv
 import requests
+import os
+import dotenv
 
+dotenv.load_dotenv()
 
 def create_csv(csv_header, csv_name):
     with open(csv_name, mode="w", newline="", encoding="utf-8") as file:
@@ -87,9 +90,8 @@ def init (server_data, motherboard_id):
 
 
         count += 1
-        print(f"{count} - Nova linha adicionada ao CSV: ", csv_line, "\n")
 
-        if len(csv_data) == 720:
+        if len(csv_data) == 5:
             with open(f"data_{date}.csv", mode="a", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file, delimiter=";", quoting=csv.QUOTE_NONNUMERIC)
                 writer.writerows(csv_data)
@@ -122,10 +124,10 @@ def get_qtd_connections(port):
 
 def upload_csv(motherboard_id, registration_number, legal_name, date):
     try:
-        requests.post("http://44.223.112.30:5000/s3/raw/upload", files={"file": open(f"data_{date}.csv", "rb")},
+        requests.post(f"http://{os.environ["DATA_TRANSFER_API"]}/s3/raw/upload", files={"file": open(f"data_{date}.csv", "rb")},
                                  data={"motherboard_uuid": motherboard_id, "registration_number": registration_number, "legal_name": legal_name})
 
-        print("CSV enviado com sucesso! \n")
+        print("CSV de hardware enviado com sucesso! \n")
     except requests.exceptions.ConnectionError as e:
         print(f"Error: {e}")
         exit()
