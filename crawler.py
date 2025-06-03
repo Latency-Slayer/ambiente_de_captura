@@ -24,22 +24,23 @@ def init():
     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
 
 
-    hardware_capturing_thread = threading.Thread(target=hardware_capturing, args=(server_data, motherboard_id,))
-    player_capturing = threading.Thread(target=players_capturing, args=(server_data,))
+    hardware_capturing_thread = threading.Thread(target=hardware_capturing, args=(server_data, motherboard_id))
+    player_capturing = threading.Thread(target=players_capturing, args=(server_data,motherboard_id))
     process_capturing_thread = threading.Thread(target=process_capturing, args=(server_data, motherboard_id,))
 
     print("Iniciando captura de hardware...")
     hardware_capturing_thread.start()
 
-    print("Iniciando captura de players...")
-    player_capturing.start()
 
     print("Iniciando captura de processo...")
     process_capturing_thread.start()
 
+    print("Iniciando captura de conexões...")
+    player_capturing.start()
+
     hardware_capturing_thread.join()
-    player_capturing.join()
     process_capturing_thread.join()
+    player_capturing.join()
 
     print("Script de captura encerrando...")
 

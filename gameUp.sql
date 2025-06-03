@@ -1,4 +1,3 @@
-
 DELIMITER $$
 
 DROP PROCEDURE IF EXISTS simular_connection_capturing_avancado$$
@@ -21,17 +20,17 @@ BEGIN
     DECLARE reducao_por_alerta FLOAT DEFAULT 1.0;
     DECLARE continente_escolhido INT;
     DECLARE pais_escolhido INT;
-    
-    -- Arrays de países e coordenadas por continente
-    DECLARE brasil_lat DECIMAL(9,6);
-    DECLARE brasil_lon DECIMAL(9,6);
+    DECLARE dias_passados INT;
+    DECLARE fator_tempo FLOAT DEFAULT 1.0;
+    DECLARE multiplicador_jogo FLOAT DEFAULT 1.0;
     
     WHILE t < fim DO
         SET hora = HOUR(t);
         SET dia = WEEKDAY(t);
+        SET dias_passados = DATEDIFF(t, inicio);
         
-        -- Crescimento gradual ao longo do tempo
-        SET crescimento = 1.0 + DATEDIFF(t, inicio) / 90.0;
+        -- Crescimento gradual ao longo do tempo (base)
+        SET crescimento = 1.0 + dias_passados / 90.0;
         
         -- Loop através dos servidores (1 a 6)
         SET servidor_atual = 1;
@@ -54,25 +53,104 @@ BEGIN
                 SET reducao_por_alerta = 1.0;
             END IF;
             
-            -- Calcular número base de jogadores
-            SET jogadores = FLOOR((50 + RAND() * 200) * crescimento * reducao_por_alerta);
-            
-            -- Horário de pico (18h às 23h)
-            IF hora BETWEEN 18 AND 23 THEN
-                SET jogadores = jogadores + FLOOR(RAND() * 3000 * crescimento * reducao_por_alerta);
-            END IF;
-            
-            -- Final de semana (Sábado=5, Domingo=6)
-            IF dia IN (5, 6) THEN
-                SET jogadores = jogadores + FLOOR(RAND() * 2000 * crescimento * reducao_por_alerta);
-            END IF;
-            
-            -- Ajuste por servidor (alguns são mais populares)
+            -- Comportamentos específicos por jogo baseado no tempo
             CASE servidor_atual
-                WHEN 1 THEN SET jogadores = jogadores * 1.5; -- Far Cry 5 - popular
-                WHEN 2 THEN SET jogadores = jogadores * 1.3; -- Assassin's Creed - popular
-                WHEN 6 THEN SET jogadores = jogadores * 1.4; -- Rainbow Six - muito popular
-                ELSE SET jogadores = jogadores * (0.8 + RAND() * 0.4);
+                -- Far Cry 5 (Servidor 1) - Estável, crescimento moderado
+                WHEN 1 THEN 
+                    SET fator_tempo = 1.0;
+                    SET multiplicador_jogo = 1.2;
+                    SET jogadores = FLOOR((80 + RAND() * 150) * crescimento * fator_tempo * multiplicador_jogo * reducao_por_alerta);
+                
+                -- Assassin's Creed (Servidor 2) - Bom índice mas estável, menor que Rainbow
+                WHEN 2 THEN 
+                    SET fator_tempo = 1.0 + (SIN(dias_passados / 30.0) * 0.1); -- Variação sutil
+                    SET multiplicador_jogo = 1.8; -- Bom índice mas menor que Rainbow
+                    SET jogadores = FLOOR((120 + RAND() * 180) * crescimento * fator_tempo * multiplicador_jogo * reducao_por_alerta);
+                
+                -- Skull and Bones (Servidor 3) - Estável, menor popularidade
+                WHEN 3 THEN 
+                    SET fator_tempo = 1.0;
+                    SET multiplicador_jogo = 0.9;
+                    SET jogadores = FLOOR((40 + RAND() * 100) * crescimento * fator_tempo * multiplicador_jogo * reducao_por_alerta);
+                
+                -- Watch Dogs 2 (Servidor 4) - Começa alto, queda drástica
+                WHEN 4 THEN 
+                    IF dias_passados <= 30 THEN
+                        -- Primeiros 30 dias: muito alto
+                        SET fator_tempo = 2.0 - (dias_passados / 30.0) * 0.5; -- De 2.0 para 1.5
+                    ELSEIF dias_passados <= 60 THEN
+                        -- 30-60 dias: queda gradual
+                        SET fator_tempo = 1.5 - ((dias_passados - 30) / 30.0) * 0.8; -- De 1.5 para 0.7
+                    ELSE
+                        -- Após 60 dias: bem baixo
+                        SET fator_tempo = 0.7 - ((dias_passados - 60) / 60.0) * 0.4; -- De 0.7 para 0.3
+                        IF fator_tempo < 0.3 THEN SET fator_tempo = 0.3; END IF;
+                    END IF;
+                    SET multiplicador_jogo = 1.5;
+                    SET jogadores = FLOOR((100 + RAND() * 200) * crescimento * fator_tempo * multiplicador_jogo * reducao_por_alerta);
+                
+                -- Star Wars Outlaws (Servidor 5) - Estável, crescimento moderado
+                WHEN 5 THEN 
+                    SET fator_tempo = 1.0 + (dias_passados / 120.0) * 0.3; -- Crescimento lento
+                    SET multiplicador_jogo = 1.1;
+                    SET jogadores = FLOOR((60 + RAND() * 120) * crescimento * fator_tempo * multiplicador_jogo * reducao_por_alerta);
+                
+                -- Rainbow Six Siege (Servidor 6) - Sempre alta quantidade
+                WHEN 6 THEN 
+                    SET fator_tempo = 1.0 + (dias_passados / 60.0) * 0.2; -- Crescimento constante
+                    SET multiplicador_jogo = 2.5; -- Mais popular
+                    SET jogadores = FLOOR((150 + RAND() * 250) * crescimento * fator_tempo * multiplicador_jogo * reducao_por_alerta);
+            END CASE;
+            
+            -- Horário de pico (18h às 23h) - ajustado por jogo
+            IF hora BETWEEN 18 AND 23 THEN
+                CASE servidor_atual
+                    WHEN 4 THEN -- Watch Dogs: pico menor após queda
+                        IF dias_passados > 60 THEN
+                            SET jogadores = jogadores + FLOOR(RAND() * 800 * fator_tempo * reducao_por_alerta);
+                        ELSE
+                            SET jogadores = jogadores + FLOOR(RAND() * 2500 * fator_tempo * reducao_por_alerta);
+                        END IF;
+                    WHEN 6 THEN -- Rainbow Six: pico sempre alto
+                        SET jogadores = jogadores + FLOOR(RAND() * 3500 * reducao_por_alerta);
+                    WHEN 2 THEN -- Assassin's Creed: pico bom mas controlado
+                        SET jogadores = jogadores + FLOOR(RAND() * 2200 * reducao_por_alerta);
+                    ELSE -- Outros jogos: pico padrão variado
+                        SET jogadores = jogadores + FLOOR(RAND() * (1500 + servidor_atual * 200) * reducao_por_alerta);
+                END CASE;
+            END IF;
+            
+            -- Final de semana (Sábado=5, Domingo=6) - ajustado por jogo
+            IF dia IN (5, 6) THEN
+                CASE servidor_atual
+                    WHEN 4 THEN -- Watch Dogs: fim de semana menor após queda
+                        IF dias_passados > 60 THEN
+                            SET jogadores = jogadores + FLOOR(RAND() * 600 * fator_tempo * reducao_por_alerta);
+                        ELSE
+                            SET jogadores = jogadores + FLOOR(RAND() * 1800 * fator_tempo * reducao_por_alerta);
+                        END IF;
+                    WHEN 6 THEN -- Rainbow Six: fim de semana sempre forte
+                        SET jogadores = jogadores + FLOOR(RAND() * 2800 * reducao_por_alerta);
+                    WHEN 2 THEN -- Assassin's Creed: fim de semana bom
+                        SET jogadores = jogadores + FLOOR(RAND() * 1600 * reducao_por_alerta);
+                    ELSE -- Outros jogos: fim de semana variado
+                        SET jogadores = jogadores + FLOOR(RAND() * (1000 + servidor_atual * 150) * reducao_por_alerta);
+                END CASE;
+            END IF;
+            
+            -- Garantir valor mínimo por jogo
+            CASE servidor_atual
+                WHEN 1 THEN IF jogadores < 50 THEN SET jogadores = 50 + FLOOR(RAND() * 50); END IF;
+                WHEN 2 THEN IF jogadores < 80 THEN SET jogadores = 80 + FLOOR(RAND() * 70); END IF;
+                WHEN 3 THEN IF jogadores < 20 THEN SET jogadores = 20 + FLOOR(RAND() * 30); END IF;
+                WHEN 4 THEN 
+                    IF dias_passados > 60 THEN
+                        IF jogadores < 15 THEN SET jogadores = 15 + FLOOR(RAND() * 25); END IF;
+                    ELSE
+                        IF jogadores < 60 THEN SET jogadores = 60 + FLOOR(RAND() * 80); END IF;
+                    END IF;
+                WHEN 5 THEN IF jogadores < 35 THEN SET jogadores = 35 + FLOOR(RAND() * 45); END IF;
+                WHEN 6 THEN IF jogadores < 100 THEN SET jogadores = 100 + FLOOR(RAND() * 100); END IF;
             END CASE;
             
             SET jogadores = FLOOR(jogadores);
@@ -249,6 +327,5 @@ CALL simular_connection_capturing_avancado(
     '2025-02-01 00:00:00',
     '2025-05-31 00:00:00'
 );
-
 
 DROP PROCEDURE simular_connection_capturing_avancado;

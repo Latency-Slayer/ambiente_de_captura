@@ -29,7 +29,7 @@ def init(server_data):
     print(connections)
 
 
-def init_faker(server_data, motherboard_id, registration_number, legal_name, connections_json):
+def init_faker(server_data, motherboard_id):
     ip = requests.get('https://api.ipify.org').text
     location = get_location(ip)
 
@@ -41,7 +41,6 @@ def init_faker(server_data, motherboard_id, registration_number, legal_name, con
         if players_difference >= len(ip_cache):
             add_players = True
 
-        print(add_players)
 
         for _ in range(players_difference):
             if not add_players:
@@ -62,13 +61,11 @@ def init_faker(server_data, motherboard_id, registration_number, legal_name, con
             }
         })
 
-        print(len(ip_cache))
-
         requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/bi/dashboard/real-time/receive-data", json={"data": connections})
-        requests.post(f"http://{os.environ["DATA_TRANSFER_API"]}/s3/raw/process/upload",
-                      json={"motherboard_uuid": motherboard_id, "registration_number": registration_number,
-                            "legal_name": legal_name,
-                            "process_json": connections_json})
+        requests.post(f"http://{os.environ["DATA_TRANSFER_API"]}/s3/raw/connections/upload",
+                      json={"motherboard_uuid": motherboard_id, "registration_number": server_data["server"]["registration_number"],
+                            "legal_name": server_data["server"]["legal_name"],
+                            "connections_json": connections})
 
         time.sleep(1)
 
