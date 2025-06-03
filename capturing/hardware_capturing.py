@@ -32,7 +32,7 @@ def init (server_data, motherboard_id):
     csv_header.append("upload")
     csv_header.append("timestamp")
 
-    date = datetime.now().strftime("%d-%m-%Y%H-%M-%S")
+    date = datetime.now().strftime("%d-%m-%Y")
 
     create_csv(csv_header, f"data_{date}.csv")
 
@@ -80,7 +80,7 @@ def init (server_data, motherboard_id):
         download = psutil.net_io_counters().bytes_recv / (1024 ** 2)
         upload = psutil.net_io_counters().bytes_sent / (1024 ** 2)
 
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now().strftime("%Y-%m-%d")
 
         csv_line.append(download)
         csv_line.append(upload)
@@ -101,7 +101,7 @@ def init (server_data, motherboard_id):
 
 
             upload_csv(motherboard_id, server_data["server"]["registration_number"], server_data["server"]["legal_name"], date)
-            date = datetime.now().strftime("%d-%m-%Y%H-%M-%S")
+            date = datetime.now().strftime("%d-%m-%Y")
 
             create_csv(csv_header, f"data_{date}.csv")
 
