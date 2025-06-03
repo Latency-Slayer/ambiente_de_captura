@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone, timedelta
 
 import psutil
 import requests
@@ -58,12 +59,14 @@ def init_faker(server_data, motherboard_id):
             "connections_data": {
                 "quant_players": len(ip_cache),
                 "players_data": list(ip_cache.values())
-            }
+            },
+            "date_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
         requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/bi/dashboard/real-time/receive-data", json={"data": connections})
         requests.post(f"http://{os.environ["DATA_TRANSFER_API"]}/s3/raw/connections/upload",
-                      json={"motherboard_uuid": motherboard_id, "registration_number": server_data["server"]["registration_number"],
+                      json={"motherboard_uuid": motherboard_id,
+                            "registration_number": server_data["server"]["registration_number"],
                             "legal_name": server_data["server"]["legal_name"],
                             "connections_json": connections})
 
