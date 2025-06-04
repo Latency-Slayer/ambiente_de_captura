@@ -10,6 +10,7 @@ import os
 from capturing.hardware_capturing import init as hardware_capturing
 from capturing.player_capturing import init_faker as players_capturing
 from capturing.process_capturing import init as process_capturing
+from capturing.hardware_process_real_time import send_data
 
 def init():
     print("Consultando dados cadastrais do servidor...")
@@ -27,6 +28,7 @@ def init():
     hardware_capturing_thread = threading.Thread(target=hardware_capturing, args=(server_data, motherboard_id))
     player_capturing = threading.Thread(target=players_capturing, args=(server_data,motherboard_id))
     process_capturing_thread = threading.Thread(target=process_capturing, args=(server_data, motherboard_id,))
+    process_hardware_realtime = threading.Thread(target=send_data, args=(motherboard_id,))
 
     print("Iniciando captura de hardware...")
     hardware_capturing_thread.start()
@@ -38,11 +40,15 @@ def init():
     print("Iniciando captura de conexões...")
     player_capturing.start()
 
+    print("Iniciando captura de processos e hardware em tempo real")
+    process_hardware_realtime.start()
+
     hardware_capturing_thread.join()
     process_capturing_thread.join()
     player_capturing.join()
+    process_hardware_realtime.join()
 
-    # print("Script de captura encerrando...")
+    print("Script de captura encerrando...")
 
 def get_motherboard_id():
     so = platform.system()
