@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timezone, timedelta
 
 import psutil
 import requests
@@ -29,7 +30,7 @@ def init(server_data):
     print(connections)
 
 
-def init_faker(server_data):
+def init_faker(server_data, motherboard_id):
     ip = requests.get('https://api.ipify.org').text
     location = get_location(ip)
 
@@ -41,7 +42,6 @@ def init_faker(server_data):
         if players_difference >= len(ip_cache):
             add_players = True
 
-        print(add_players)
 
         for _ in range(players_difference):
             if not add_players:
@@ -59,16 +59,18 @@ def init_faker(server_data):
             "connections_data": {
                 "quant_players": len(ip_cache),
                 "players_data": list(ip_cache.values())
-            }
+            },
+            "date_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         })
 
-        print(len(ip_cache))
+        requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/bi/dashboard/real-time/receive-data", json={"data": connections})
+        requests.post(f"http://{os.environ["DATA_TRANSFER_API"]}/s3/raw/connections/upload",
+                      json={"motherboard_uuid": motherboard_id,
+                            "registration_number": server_data["server"]["registration_number"],
+                            "legal_name": server_data["server"]["legal_name"],
+                            "connections_json": connections})
 
-        response = requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/bi/dashboard/real-time/receive-data", json={"data": connections})
-
-        # print(response.json())
-
-        time.sleep(1)
+        time.sleep(2)
 
 
 def generate_fake_connections():

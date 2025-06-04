@@ -9,6 +9,8 @@ import os
 
 from capturing.hardware_capturing import init as hardware_capturing
 from capturing.player_capturing import init_faker as players_capturing
+from capturing.process_capturing import init as process_capturing
+from capturing.hardware_process_real_time import send_data
 
 def init():
     print("Consultando dados cadastrais do servidor...")
@@ -23,40 +25,30 @@ def init():
     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
 
 
-    # hardware_capturing_thread = threading.Thread(target=hardware_capturing, args=(server_data, motherboard_id,))
+    hardware_capturing_thread = threading.Thread(target=hardware_capturing, args=(server_data, motherboard_id))
+    player_capturing = threading.Thread(target=players_capturing, args=(server_data,motherboard_id))
+    process_capturing_thread = threading.Thread(target=process_capturing, args=(server_data, motherboard_id,))
+    process_hardware_realtime = threading.Thread(target=send_data, args=(motherboard_id,))
 
-    player_capturing = threading.Thread(target=players_capturing, args=(server_data,))
+    print("Iniciando captura de hardware...")
+    hardware_capturing_thread.start()
 
-    # print("Iniciando captura de hardware...")
-    # hardware_capturing_thread.start()
 
-    print("Iniciando captura de players...")
+    print("Iniciando captura de processo...")
+    process_capturing_thread.start()
+
+    print("Iniciando captura de conexões...")
     player_capturing.start()
 
-    # hardware_capturing_thread.join()
-    player_capturing.join()
+    print("Iniciando captura de processos e hardware em tempo real")
+    process_hardware_realtime.start()
 
+    hardware_capturing_thread.join()
+    process_capturing_thread.join()
+    player_capturing.join()
+    process_hardware_realtime.join()
 
     print("Script de captura encerrando...")
-
-
-
-# def init():
-#     print("Consultando dados cadastrais do servidor...")
-#     motherboard_id = get_motherboard_id()
-#
-#     try:
-#         server_data = requests.get(f"http://44.223.112.30/server/get/components?motherboardID={motherboard_id}").json()
-#     except Exception:
-#         print("Servidor não cadastrado, execute o script de cadastro primeiro.")
-#         exit()
-#
-#     print(f"Tag_name: \033[1;36m{server_data['server']["tag_name"]}\033[0m \n")
-#
-#     print("Iniciando captura de dados...")
-#
-#         time.sleep(3)
-#
 
 def get_motherboard_id():
     so = platform.system()
