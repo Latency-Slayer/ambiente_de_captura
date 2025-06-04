@@ -42,7 +42,7 @@ def init():
     process_capturing_thread.join()
     player_capturing.join()
 
-    print("Script de captura encerrando...")
+    # print("Script de captura encerrando...")
 
 def get_motherboard_id():
     so = platform.system()

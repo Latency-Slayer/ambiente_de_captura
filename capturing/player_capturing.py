@@ -70,7 +70,7 @@ def init_faker(server_data, motherboard_id):
                             "legal_name": server_data["server"]["legal_name"],
                             "connections_json": connections})
 
-        time.sleep(1)
+        time.sleep(2)
 
 
 def generate_fake_connections():
