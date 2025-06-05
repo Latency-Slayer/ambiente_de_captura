@@ -57,7 +57,7 @@ def collect_data():
 
     return metrics, process
 
-def send_data():
+def send_data(motherboard_id):
     base_url_metrics = f"http://{os.environ["WEB_DATA_VIZ_URL"]}/hardware/api/real-time"
     base_url_process = f"http://{os.environ["WEB_DATA_VIZ_URL"]}/process/api/real-time"
 
@@ -65,10 +65,10 @@ def send_data():
         metrics, process = collect_data()
 
         try:
-            response_metrics = requests.post(base_url_metrics, json={"metrics": metrics, "motherboardId": motherboardId})
-            response_process = requests.post(base_url_process, json={"process": process, "motherboardId": motherboardId})
+            response_metrics = requests.post(base_url_metrics, json={"metrics": metrics, "motherboardId": motherboard_id})
+            response_process = requests.post(base_url_process, json={"process": process, "motherboardId": motherboard_id})
 
         except requests.RequestException as e:
             print("Erro ao enviar dados:", e)
 
-        time.sleep(5)
+        time.sleep(1)
