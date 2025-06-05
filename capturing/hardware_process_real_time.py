@@ -71,4 +71,4 @@ def send_data(motherboard_id):
         except requests.RequestException as e:
             print("Erro ao enviar dados:", e)
 
-        time.sleep(5)
+        time.sleep(1)
