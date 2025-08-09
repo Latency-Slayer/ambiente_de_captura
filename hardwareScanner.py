@@ -1,9 +1,17 @@
+import os
+
 import psutil
 import platform
 import subprocess
 import requests
 import re
 import json
+import dotenv
+
+dotenv.load_dotenv()
+import os
+
+print(os.environ["WEB_DATA_VIZ_URL"])
 
 class Json:
     def __init__(self):
@@ -32,6 +40,8 @@ def init():
     tag_name = get_tag_name()
     server_type = get_server_type()
     so = platform.system()
+    game = get_server_game()
+    port = get_server_port()
     location = get_server_location()
     city = location["city"]
     country = location["countryCode"]
@@ -42,13 +52,16 @@ def init():
     server_json.append("type", server_type["type"])
     server_json.append("instance_id", server_type["instance_id"])
     server_json.append("so", so.lower())
+    server_json.append("game", game)
+    server_json.append("port", port)
     server_json.append("city", city)
     server_json.append("country_code", country)
+
 
     server_json.append("components", components)
 
     try:
-        request = requests.post("http://localhost:3333/server/register", json=server_json.json)
+        request = requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/server/register", json=server_json.json)
 
         if request.status_code != 201:
             raise ValueError(request.json())
@@ -86,7 +99,7 @@ def get_auth_data():
         email = input("📧 Digite seu e-mail: ")
         password = input("🔑 Digite sua senha: ")
 
-        auth = requests.post("http://localhost:3333/usuarios/login", json={
+        auth = requests.post(f"http://{os.environ["WEB_DATA_VIZ_URL"]}/usuarios/login", json={
             "loginEmailServer": email,
             "loginPasswordServer": password
         })
@@ -160,6 +173,30 @@ def get_instance_id():
     instance_id = input("☁️ Digite o ID da instância em nuvem (opcional): ")
     return instance_id or None
 
+
+def get_server_game():
+    game = input("Jogo hospedado no servidor: ")
+
+    if game == "":
+        print("O jogo é obrigatório. Tente novamente. \n")
+        return get_server_game()
+
+    return game
+
+
+def get_server_port():
+    try:
+        port = int(input("Porta em que o jogo está sendo executado: "))
+
+        if port == "":
+            print("A porta é obrigatória. Tente novamente. \n")
+            return get_server_port()
+
+        return port
+
+    except:
+        print("A porta deve ser um número inteiro. Tente novamente. \n")
+        return get_server_port()
 
 
 def get_components ():
@@ -370,7 +407,6 @@ def get_disk_data():
 
     except Exception as e:
         print(f"\n\033[1;31m❗ Erro ao coletar dados dos discos:\033[0m {e}")
-
 
 
 def get_number_in_str(str: str):
